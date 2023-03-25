@@ -5,8 +5,13 @@
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 #include "math_3d.h"
+#include "pipeline.h"
+
+#define WINDOW_WIDTH 1024   
+#define WINDOW_HEIGHT 768
 
 GLuint VBO; // Указатель на буфер вершины
+GLuint IBO;
 GLuint gWorldLocation; // Указатель для доступа к всемирной матрице
 
 static const char* pVS = "                                                          \n\
@@ -16,19 +21,24 @@ layout (location = 0) in vec3 Position;                                         
                                                                                     \n\
 uniform mat4 gWorld;                                                                \n\
                                                                                     \n\
+out vec4 Color;                                                                     \n\
+                                                                                    \n\
 void main()                                                                         \n\
 {                                                                                   \n\
     gl_Position = gWorld * vec4(Position, 1.0);                                     \n\
+    Color = vec4(clamp(Position, 0.0, 1.0), 1.0);                                   \n\
 }";
 
 static const char* pFS = "                                                          \n\
 #version 330                                                                        \n\
                                                                                     \n\
+in vec4 Color;                                                                      \n\
+                                                                                    \n\
 out vec4 FragColor;                                                                 \n\
                                                                                     \n\
 void main()                                                                         \n\
 {                                                                                   \n\
-    FragColor = vec4(1.0, 0.0, 0.0, 1.0);                                           \n\
+    FragColor = Color;                                                              \n\
 }";
 
 static void RenderSceneCB()
@@ -39,24 +49,21 @@ static void RenderSceneCB()
 
     Scale += 0.001f;
 
-    Matrix4f World;
-
-    // Настраиваем матрицу изменения масштаба 
-    World.m[0][0] = sinf(Scale); World.m[0][1] = 0.0f;        World.m[0][2] = 0.0f;        World.m[0][3] = 0.0f;
-    World.m[1][0] = 0.0f;        World.m[1][1] = cosf(Scale); World.m[1][2] = 0.0f;        World.m[1][3] = 0.0f;
-    World.m[2][0] = 0.0f;        World.m[2][1] = 0.0f;        World.m[2][2] = sinf(Scale); World.m[2][3] = 0.0f;
-    World.m[3][0] = 0.0f;        World.m[3][1] = 0.0f;        World.m[3][2] = 0.0f;        World.m[3][3] = 1.0f;
+    Pipeline p;
+    p.Rotate(0.0f, Scale, 0.0f);
+    p.WorldPos(0.0f, 0.0f, 5.0f);
+    p.SetPerspectiveProj(30.0f, WINDOW_WIDTH, WINDOW_HEIGHT, 1.0f, 100.0f);
 
 
-
-    glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, &World.m[0][0]); // Загружаем матрицу в шейдер
+    glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, (const GLfloat*)p.GetTrans()); // Загружаем матрицу в шейдер
     // Передаём адрес uniform-переменной. Кол-во матриц, к. мы обрабатываем. Строковый порядок. Сама матрица
 
     glEnableVertexAttribArray(0); // Включаем атрибуты вершины
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0); // Указываем конвейеру, как воспринимать данные внутри буфера
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
 
-    glDrawArrays(GL_TRIANGLES, 0, 3); // Запускаем функцию для отрисовки
+    glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, 0); // Запускаем функцию для отрисовки
 
     glDisableVertexAttribArray(0); // Выключаем атрибуты вершины
 
@@ -72,14 +79,27 @@ static void InitializeGlutCallbacks()
 
 static void CreateVertexBuffer()
 {
-    Vector3f Vertices[3];
-    Vertices[0] = Vector3f(-1.0f, -1.0f, 0.0f);
-    Vertices[1] = Vector3f(1.0f, -1.0f, 0.0f);
-    Vertices[2] = Vector3f(0.0f, 1.0f, 0.0f);
+    Vector3f Vertices[4];
+    Vertices[0] = Vector3f(-1.0f, -1.0f, 0.5773f);
+    Vertices[1] = Vector3f(0.0f, -1.0f, -1.15475);
+    Vertices[2] = Vector3f(1.0f, -1.0f, 0.5773f);
+    Vertices[3] = Vector3f(0.0f, 1.0f, 0.0f);
 
     glGenBuffers(1, &VBO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices), Vertices, GL_STATIC_DRAW);
+}
+
+static void CreateIndexBuffer()
+{
+    unsigned int Indices[] = { 0, 3, 1,
+                               1, 3, 2,
+                               2, 3, 0,
+                               0, 2, 1 };
+
+    glGenBuffers(1, &IBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Indices), Indices, GL_STATIC_DRAW);
 }
 
 static void AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum ShaderType)
@@ -151,7 +171,7 @@ int main(int argc, char** argv)
 {
     glutInit(&argc, argv); // Иницианализируем GLUT
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA); // Включаем двойную буферизацию и буфер цвета 
-    glutInitWindowSize(1024, 768); // Задаём размер окна
+    glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT); // Задаём размер окна
     glutInitWindowPosition(100, 100); // Позицию окна
     glutCreateWindow("Something"); // Создаём окно и задаём ему заголовок
 
@@ -165,7 +185,8 @@ int main(int argc, char** argv)
 
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f); // Задаем цвет, к. будет использован во время очистки буфера кадра
 
-    CreateVertexBuffer();
+    CreateVertexBuffer(); // Создаём буффер вершин
+    CreateIndexBuffer(); // Создаём буффер индексов
 
     CompileShaders(); // Компилируем шейдеры
 
