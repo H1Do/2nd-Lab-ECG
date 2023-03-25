@@ -2,12 +2,18 @@
 #ifndef MATH_3D_H
 #define MATH_3D_H
 
+#define _USE_MATH_DEFINES
+#include <math.h>
+
 struct Vector3f {
 	float x, y, z;
 
 	Vector3f() = default;
 	Vector3f(float x, float y, float z) : x(x), y(y), z(z) { }
 };
+
+#define ToRadian(x) ((x) * M_PI / 180.0f)
+#define ToDegree(x) ((x) * 180.0f / M_PI)
 
 struct Matrix4f {
 	float m[4][4];

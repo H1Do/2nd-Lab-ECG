@@ -4,8 +4,8 @@
 #include <math.h>
 #include <GL/glew.h>
 #include <GL/freeglut.h>
-#include "math_3d.h"
 #include "pipeline.h"
+#include "pipeline.cpp"
 
 #define WINDOW_WIDTH 1024   
 #define WINDOW_HEIGHT 768
@@ -50,7 +50,7 @@ static void RenderSceneCB()
     Scale += 0.001f;
 
     Pipeline p;
-    p.Rotate(0.0f, Scale, 0.0f);
+    p.Rotate(0.0f, Scale, 0.0f); // Вращение по X, Y, Z
     p.WorldPos(0.0f, 0.0f, 5.0f);
     p.SetPerspectiveProj(30.0f, WINDOW_WIDTH, WINDOW_HEIGHT, 1.0f, 100.0f);
 
@@ -79,7 +79,7 @@ static void InitializeGlutCallbacks()
 
 static void CreateVertexBuffer()
 {
-    Vector3f Vertices[4];
+    Vector3f Vertices[4]; // Настраиваем положение вершин
     Vertices[0] = Vector3f(-1.0f, -1.0f, 0.5773f);
     Vertices[1] = Vector3f(0.0f, -1.0f, -1.15475);
     Vertices[2] = Vector3f(1.0f, -1.0f, 0.5773f);
