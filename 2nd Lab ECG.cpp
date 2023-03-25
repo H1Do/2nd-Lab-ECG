@@ -6,8 +6,8 @@
 #include <GL/freeglut.h>
 #include "math_3d.h"
 
-GLuint VBO;
-GLuint gWorldLocation;
+GLuint VBO; // Указатель на буфер вершины
+GLuint gWorldLocation; // Указатель для доступа к всемирной матрице
 
 static const char* pVS = "                                                          \n\
 #version 330                                                                        \n\
@@ -33,7 +33,7 @@ void main()                                                                     
 
 static void RenderSceneCB()
 {
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT); // Очищение буфера кадра 
 
     static float Scale = 0.0f;
 
@@ -41,22 +41,26 @@ static void RenderSceneCB()
 
     Matrix4f World;
 
+    // Настраиваем матрицу, так чтобы v2 и v3 были равны нулю (объект не будет двигаться по
+    // Y и Z), а в v1 записываем значение синуса, чтобы X плавно перходило от -1 до 1
     World.m[0][0] = 1.0f; World.m[0][1] = 0.0f; World.m[0][2] = 0.0f; World.m[0][3] = sinf(Scale);
     World.m[1][0] = 0.0f; World.m[1][1] = 1.0f; World.m[1][2] = 0.0f; World.m[1][3] = 0.0f;
     World.m[2][0] = 0.0f; World.m[2][1] = 0.0f; World.m[2][2] = 1.0f; World.m[2][3] = 0.0f;
     World.m[3][0] = 0.0f; World.m[3][1] = 0.0f; World.m[3][2] = 0.0f; World.m[3][3] = 1.0f;
 
-    glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, &World.m[0][0]);
 
-    glEnableVertexAttribArray(0);
+    glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, &World.m[0][0]); // Загружаем матрицу в шейдер
+    // Передаём адрес uniform-переменной. Кол-во матриц, к. мы обрабатываем. Строковый порядок. Сама матрица
+
+    glEnableVertexAttribArray(0); // Включаем атрибуты вершины
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0); // Указываем конвейеру, как воспринимать данные внутри буфера
 
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glDrawArrays(GL_TRIANGLES, 0, 3); // Запускаем функцию для отрисовки
 
-    glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(0); // Выключаем атрибуты вершины
 
-    glutSwapBuffers();
+    glutSwapBuffers(); // Меняем местами фоновый буфер и буфер кадра
 }
 
 
@@ -80,9 +84,9 @@ static void CreateVertexBuffer()
 
 static void AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum ShaderType)
 {
-    GLuint ShaderObj = glCreateShader(ShaderType);
+    GLuint ShaderObj = glCreateShader(ShaderType); // Создаём шейдер
 
-    if (ShaderObj == 0) {
+    if (ShaderObj == 0) { // Проверяем на ошибку
         fprintf(stderr, "Error creating shader type %d\n", ShaderType);
         exit(0);
     }
@@ -91,25 +95,26 @@ static void AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum Shad
     p[0] = pShaderText;
     GLint Lengths[1];
     Lengths[0] = strlen(pShaderText);
-    glShaderSource(ShaderObj, 1, p, Lengths);
-    glCompileShader(ShaderObj);
+    glShaderSource(ShaderObj, 1, p, Lengths); // указываем исходных код шейдера
+
+    glCompileShader(ShaderObj); // Компилируем шейдер
     GLint success;
     glGetShaderiv(ShaderObj, GL_COMPILE_STATUS, &success);
-    if (!success) {
+    if (!success) { // Проверяем на ошибки
         GLchar InfoLog[1024];
         glGetShaderInfoLog(ShaderObj, 1024, NULL, InfoLog);
         fprintf(stderr, "Error compiling shader type %d: '%s'\n", ShaderType, InfoLog);
         exit(1);
     }
 
-    glAttachShader(ShaderProgram, ShaderObj);
+    glAttachShader(ShaderProgram, ShaderObj); // Присоединяем скомп. объект шейдера к объекту программы
 }
 
 static void CompileShaders()
 {
-    GLuint ShaderProgram = glCreateProgram();
+    GLuint ShaderProgram = glCreateProgram(); // Создаем программный объект
 
-    if (ShaderProgram == 0) {
+    if (ShaderProgram == 0) { // Проверяем на ошибку
         fprintf(stderr, "Error creating shader program\n");
         exit(1);
     }
@@ -120,15 +125,15 @@ static void CompileShaders()
     GLint Success = 0;
     GLchar ErrorLog[1024] = { 0 };
 
-    glLinkProgram(ShaderProgram);
+    glLinkProgram(ShaderProgram); // Линкуем скомпилированные и присоед. к программе шейдеры 
     glGetProgramiv(ShaderProgram, GL_LINK_STATUS, &Success);
-    if (Success == 0) {
+    if (Success == 0) { // Проверяем на ошибку
         glGetProgramInfoLog(ShaderProgram, sizeof(ErrorLog), NULL, ErrorLog);
         fprintf(stderr, "Error linking shader program: '%s'\n", ErrorLog);
         exit(1);
     }
 
-    glValidateProgram(ShaderProgram);
+    glValidateProgram(ShaderProgram); // Проверяем на успешность линковки 
     glGetProgramiv(ShaderProgram, GL_VALIDATE_STATUS, &Success);
     if (!Success) {
         glGetProgramInfoLog(ShaderProgram, sizeof(ErrorLog), NULL, ErrorLog);
@@ -136,7 +141,7 @@ static void CompileShaders()
         exit(1);
     }
 
-    glUseProgram(ShaderProgram);
+    glUseProgram(ShaderProgram); // Назначаем отлинкованной программы шейдеров для конвейера
 
     gWorldLocation = glGetUniformLocation(ShaderProgram, "gWorld");
     assert(gWorldLocation != 0xFFFFFFFF);
@@ -144,28 +149,27 @@ static void CompileShaders()
 
 int main(int argc, char** argv)
 {
-    glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
-    glutInitWindowSize(1024, 768);
-    glutInitWindowPosition(100, 100);
-    glutCreateWindow("Tutorial 06");
+    glutInit(&argc, argv); // Иницианализируем GLUT
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA); // Включаем двойную буферизацию и буфер цвета 
+    glutInitWindowSize(1024, 768); // Задаём размер окна
+    glutInitWindowPosition(100, 100); // Позицию окна
+    glutCreateWindow("Something"); // Создаём окно и задаём ему заголовок
 
     InitializeGlutCallbacks();
 
-    // Must be done after glut is initialized!
-    GLenum res = glewInit();
-    if (res != GLEW_OK) {
+    GLenum res = glewInit(); // Инициализируем GLEW
+    if (res != GLEW_OK) { // Проверяем на ошибку
         fprintf(stderr, "Error: '%s'\n", glewGetErrorString(res));
         return 1;
     }
 
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f); // Задаем цвет, к. будет использован во время очистки буфера кадра
 
     CreateVertexBuffer();
 
-    CompileShaders();
+    CompileShaders(); // Компилируем шейдеры
 
-    glutMainLoop();
+    glutMainLoop(); // Передаём контроль GLUT
 
     return 0;
 }
