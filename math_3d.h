@@ -10,6 +10,8 @@ struct Vector3f { // Вектро в 3-мерном пространстве
 
 	Vector3f() = default;
 	Vector3f(float x, float y, float z) : x(x), y(y), z(z) { }
+	Vector3f Cross(const Vector3f& v) const;
+	Vector3f& Normalize();
 };
 
 #define ToRadian(x) ((x) * M_PI / 180.0f) // Из градусов в радианы
@@ -38,6 +40,12 @@ struct Matrix4f { // Матрица размера 4 на 4
 		}
 		return result;
 	}
+
+	void InitScaleTransform(float ScaleX, float ScaleY, float ScaleZ);
+	void InitRotateTransform(float RotateX, float RotateY, float RotateZ);
+	void InitTranslationTransform(float x, float y, float z);
+	void InitCameraTransform(const Vector3f& Target, const Vector3f& Up);
+	void InitPersProjTransform(float FOV, float Width, float Height, float zNear, float zFar);
 };
 
 #endif /* MATH_3D_H */
