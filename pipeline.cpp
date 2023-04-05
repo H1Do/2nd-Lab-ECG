@@ -1,6 +1,6 @@
 #include "pipeline.h"
 
-void Pipeline::InitScaleTransform(Matrix4f& m) const
+void Pipeline::InitScaleTransform(Matrix4f& m) const // Инициализация матрицы масштабирования
 {
     m.m[0][0] = m_scale.x; m.m[0][1] = 0.0f; m.m[0][2] = 0.0f; m.m[0][3] = 0.0f;
     m.m[1][0] = 0.0f; m.m[1][1] = m_scale.y; m.m[1][2] = 0.0f; m.m[1][3] = 0.0f;
@@ -8,7 +8,7 @@ void Pipeline::InitScaleTransform(Matrix4f& m) const
     m.m[3][0] = 0.0f; m.m[3][1] = 0.0f; m.m[3][2] = 0.0f; m.m[3][3] = 1.0f;
 }
 
-void Pipeline::InitRotateTransform(Matrix4f& m) const
+void Pipeline::InitRotateTransform(Matrix4f& m) const // Инициализация матрицы поворота
 {
     Matrix4f rx, ry, rz;
 
@@ -34,7 +34,7 @@ void Pipeline::InitRotateTransform(Matrix4f& m) const
     m = rz * ry * rx;
 }
 
-void Pipeline::InitTranslationTransform(Matrix4f& m) const
+void Pipeline::InitTranslationTransform(Matrix4f& m) const // Инициализация матрицы перемещения
 {
     m.m[0][0] = 1.0f; m.m[0][1] = 0.0f; m.m[0][2] = 0.0f; m.m[0][3] = m_worldPos.x;
     m.m[1][0] = 0.0f; m.m[1][1] = 1.0f; m.m[1][2] = 0.0f; m.m[1][3] = m_worldPos.y;
@@ -42,7 +42,7 @@ void Pipeline::InitTranslationTransform(Matrix4f& m) const
     m.m[3][0] = 0.0f; m.m[3][1] = 0.0f; m.m[3][2] = 0.0f; m.m[3][3] = 1.0f;
 }
 
-void Pipeline::InitPerspectiveProj(Matrix4f& m) const
+void Pipeline::InitPerspectiveProj(Matrix4f& m) const // Инициализация матрицы перспективной проекции
 {
     const float ar = m_persProj.Width / m_persProj.Height;
     const float zNear = m_persProj.zNear;
@@ -61,11 +61,17 @@ const Matrix4f* Pipeline::GetTrans()
 {
     Matrix4f ScaleTrans, RotateTrans, TranslationTrans, PersProjTrans;
 
+    // Создание четырех матриц преобразования.
+    // ScaleTrans - масштабирование.
+    // RotateTrans - поворот.
+    // TranslationTrans - перемещение.
+    // PersProjTrans - перспективная проекция.
     InitScaleTransform(ScaleTrans);
     InitRotateTransform(RotateTrans);
     InitTranslationTransform(TranslationTrans);
     InitPerspectiveProj(PersProjTrans);
 
+    // Объединение четырех матриц преобразования в одну матрицу m_transformation.
     m_transformation = PersProjTrans * TranslationTrans * RotateTrans * ScaleTrans;
     return &m_transformation;
 }

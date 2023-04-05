@@ -5,27 +5,27 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
-struct Vector3f {
+struct Vector3f { // Вектро в 3-мерном пространстве
 	float x, y, z;
 
 	Vector3f() = default;
 	Vector3f(float x, float y, float z) : x(x), y(y), z(z) { }
 };
 
-#define ToRadian(x) ((x) * M_PI / 180.0f)
-#define ToDegree(x) ((x) * 180.0f / M_PI)
+#define ToRadian(x) ((x) * M_PI / 180.0f) // Из градусов в радианы
+#define ToDegree(x) ((x) * 180.0f / M_PI) // Из радианов в градусы
 
-struct Matrix4f {
+struct Matrix4f { // Матрица размера 4 на 4
 	float m[4][4];
 
-	Matrix4f() = default;
-	inline void InitIdentity() {
+	Matrix4f() = default; // Конструктор без параметров
+	inline void InitIdentity() { // Установка параметров единичной матрицы
 		m[0][0] = 1.0f; m[0][1] = 0.0f; m[0][2] = 0.0f; m[0][3] = 0.0f;
 		m[1][0] = 0.0f; m[1][1] = 1.0f; m[1][2] = 0.0f; m[1][3] = 0.0f;
 		m[2][0] = 0.0f; m[2][1] = 0.0f; m[2][2] = 1.0f; m[2][3] = 0.0f;
 		m[3][0] = 0.0f; m[3][1] = 0.0f; m[3][2] = 0.0f; m[3][3] = 1.0f;
 	}
-	inline Matrix4f operator*(const Matrix4f& other) const {
+	inline Matrix4f operator*(const Matrix4f& other) const { // Перегрузка оператора умножения м/у матрицами
 		Matrix4f result;
 
 		for (unsigned i = 0; i < 4; i++) {

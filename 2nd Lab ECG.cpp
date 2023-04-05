@@ -14,6 +14,7 @@ GLuint VBO; // Указатель на буфер вершины
 GLuint IBO;
 GLuint gWorldLocation; // Указатель для доступа к всемирной матрице
 
+// Код шейдера
 static const char* pVS = "                                                          \n\
 #version 330                                                                        \n\
                                                                                     \n\
@@ -29,6 +30,7 @@ void main()                                                                     
     Color = vec4(clamp(Position, 0.0, 1.0), 1.0);                                   \n\
 }";
 
+// Фрагмент шейдера для определения цвета каждого пикселя
 static const char* pFS = "                                                          \n\
 #version 330                                                                        \n\
                                                                                     \n\

@@ -4,38 +4,38 @@
 
 #include "math_3d.h"
 
-class Pipeline
+class Pipeline // Конвеер
 {
 public:
-    Pipeline()
+    Pipeline() // Конструктор конвеера
     {
         m_scale = Vector3f(1.0f, 1.0f, 1.0f);
         m_worldPos = Vector3f(0.0f, 0.0f, 0.0f);
         m_rotateInfo = Vector3f(0.0f, 0.0f, 0.0f);
     }
 
-    void Scale(float ScaleX, float ScaleY, float ScaleZ)
+    void Scale(float ScaleX, float ScaleY, float ScaleZ) // Изменяем масштаб
     {
         m_scale.x = ScaleX;
         m_scale.y = ScaleY;
         m_scale.z = ScaleZ;
     }
 
-    void WorldPos(float x, float y, float z)
+    void WorldPos(float x, float y, float z) // Начало отчета нашей системы координат
     {
         m_worldPos.x = x;
         m_worldPos.y = y;
         m_worldPos.z = z;
     }
 
-    void Rotate(float RotateX, float RotateY, float RotateZ)
+    void Rotate(float RotateX, float RotateY, float RotateZ) // Изменение параметров вращения
     {
         m_rotateInfo.x = RotateX;
         m_rotateInfo.y = RotateY;
         m_rotateInfo.z = RotateZ;
     }
 
-    void SetPerspectiveProj(float FOV, float Width, float Height, float zNear, float zFar)
+    void SetPerspectiveProj(float FOV, float Width, float Height, float zNear, float zFar) // Установка проекции перспективы
     {
         m_persProj.FOV = FOV;
         m_persProj.Width = Width;
@@ -44,9 +44,14 @@ public:
         m_persProj.zFar = zFar;
     }
 
-    const Matrix4f* GetTrans();
+    const Matrix4f* GetTrans(); // 
 
 private:
+    // Создание четырех матриц преобразования.
+    // ScaleTrans - масштабирование.
+    // RotateTrans - поворот.
+    // TranslationTrans - перемещение.
+    // PersProjTrans - перспективная проекция.
     void InitScaleTransform(Matrix4f& m) const;
     void InitRotateTransform(Matrix4f& m) const;
     void InitTranslationTransform(Matrix4f& m) const;
