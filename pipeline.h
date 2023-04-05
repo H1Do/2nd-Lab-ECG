@@ -44,7 +44,14 @@ public:
         m_persProj.zFar = zFar;
     }
 
-    const Matrix4f* GetTrans(); // 
+    void SetCamera(const Vector3f& Pos, const Vector3f& Target, const Vector3f& Up) // Установить парамметры камеры
+    {
+        m_camera.Pos = Pos;
+        m_camera.Target = Target;
+        m_camera.Up = Up;
+    }
+
+    const Matrix4f* GetTrans();
 
 private:
     // Создание четырех матриц преобразования.
@@ -57,10 +64,12 @@ private:
     void InitTranslationTransform(Matrix4f& m) const;
     void InitPerspectiveProj(Matrix4f& m) const;
 
+private:
     Vector3f m_scale;
     Vector3f m_worldPos;
     Vector3f m_rotateInfo;
 
+    // Стуктура перспективы проекции
     struct {
         float FOV;
         float Width;
@@ -69,8 +78,14 @@ private:
         float zFar;
     } m_persProj;
 
+    // Структура камеры
+    struct { 
+        Vector3f Pos;
+        Vector3f Target;
+        Vector3f Up;
+    } m_camera;
+
     Matrix4f m_transformation;
 };
-
 
 #endif	/* PIPELINE_H */
